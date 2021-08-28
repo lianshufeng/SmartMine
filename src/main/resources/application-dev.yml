@@ -1,0 +1,23 @@
+task:
+  nvidiaSmiPath: c:/nvidia-smi.exe
+  #捕获时间,单位秒, 时间间隔越长， GPU约平稳
+  sampleTime: 15
+  #触发挖矿的延迟时间(秒)
+  mineIntervalTime: 60
+  #最小收益率
+  minIncomeGpu: 15
+  #波动的gpu
+  waveGpu: 5
+  #波动的显存
+  waveMemory: 5
+
+behash:
+  homePath: C:/behash
+  #hash宝的用户id
+  uid: 144520
+
+
+
+logging:
+  level:
+    com.github.smartmine.core: debug

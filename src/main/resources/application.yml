@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    active: dev
+
+
+
+task:
+  nvidiaSmiPath: c:/nvidia-smi.exe
+
+behash:
+  homePath: C:/behash
+
+
+logging:
+  file:
+    name: logs/SmartMine.log
