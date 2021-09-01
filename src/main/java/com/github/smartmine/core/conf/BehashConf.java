@@ -23,5 +23,8 @@ public class BehashConf {
     //hash的home
     private File homePath;
 
+    //是否显示界面
+    private boolean show = false;
+
 
 }

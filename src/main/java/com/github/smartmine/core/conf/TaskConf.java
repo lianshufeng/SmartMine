@@ -24,10 +24,17 @@ public class TaskConf {
     private int sampleTime = 15;
 
     //触发挖矿的延迟时间(秒)
-    private int mineIntervalTime = 60;
+    private int keepTaskStatTime = 60;
 
     // 最小收益率
     private int minIncomeGpu = 15;
+
+    //保持收益增加时间（进行调整）
+    private int keepAddTime = 180;
+
+    //保持收益减少时间（进行调整）
+    private int keepSubTime = 20;
+
 
     //波动的gpu
     private int waveGpu = 5;

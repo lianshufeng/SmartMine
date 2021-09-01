@@ -1,20 +1,22 @@
 task:
-  nvidiaSmiPath: c:/nvidia-smi.exe
+  nvidiaSmiPath: C:/mine/lib/nvidia-smi.exe
   #捕获时间,单位秒, 时间间隔越长， GPU约平稳
   sampleTime: 15
-  #触发挖矿的延迟时间(秒)
-  mineIntervalTime: 60
+  #保持任务状态的时间(秒)
+  keepTaskStatTime: 60
   #最小收益率
   minIncomeGpu: 15
   #波动的gpu
   waveGpu: 5
   #波动的显存
   waveMemory: 5
-
+  keepAddTime: 60
+  keepSubTime: 20
 behash:
-  homePath: C:/behash
+  homePath: C:/mine/lib/behash
   #hash宝的用户id
   uid: 144520
+  show: true
 
 
 

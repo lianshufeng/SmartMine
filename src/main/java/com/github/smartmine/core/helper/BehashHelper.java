@@ -34,6 +34,12 @@ public class BehashHelper {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private TaskProgressHelper taskProgressHelper;
+
+    //结束任务的时间
+    private long endTaskTime = 0;
+
 
     @Autowired
     private void init(ApplicationContext applicationContext) {
@@ -48,36 +54,36 @@ public class BehashHelper {
      */
     @SneakyThrows
     public synchronized void update(int canUsedGpu) {
+
         //创建新任务
         if (currentTask == null) {
-            //创建进程,减去波动值
-            if (canUsedGpu > 0) {
-                startTask(canUsedGpu - this.taskConf.getWaveGpu());
+
+            //刚结束的进程不启动新任务
+            if (this.endTaskTime + taskConf.getKeepTaskStatTime() * 1000 > System.currentTimeMillis()) {
+                return;
+            }
+
+            //空余GPU-收益率/2
+            int taskGpu = canUsedGpu - (int) (this.taskConf.getMinIncomeGpu() / 3 * 2);
+            if (taskGpu > 0) {
+                startTask(taskGpu);
             }
             return;
         }
 
 
-        //一定的周期内，不调整
-        if (currentTask.getCreateTime() + taskConf.getMineIntervalTime() * 1000 > System.currentTimeMillis()) {
-            log.debug("周期内无需调整 : {}", System.currentTimeMillis() - currentTask.getCreateTime());
+        //周期内，不调整
+        if (currentTask.getCreateTime() + taskConf.getKeepTaskStatTime() * 1000 > System.currentTimeMillis()) {
             return;
         }
 
 
-        //更新条件
-        if (canUsedGpu > this.taskConf.getMinIncomeGpu()) {
-            log.info("满足收益要求，准备提高: {}", canUsedGpu);
+        //收益的增减或者正常状态
+        this.taskProgressHelper.updateState(canUsedGpu, () -> {
+            log.info("收益调整 : {}", canUsedGpu);
             BehashHelper.this.destroy();
-            return;
-        }
+        });
 
-
-        //Gpu不够用则结束任务，等待下次创建任务
-        if (canUsedGpu < 0) {
-            log.info("可用GPU不够，调整中 : {}", canUsedGpu);
-            BehashHelper.this.destroy();
-        }
 
     }
 
@@ -94,7 +100,7 @@ public class BehashHelper {
         //状态栏
         iniFile.put("config", "icon", "1");
         //最小化窗口
-        iniFile.put("config", "minwindow", "1");
+        iniFile.put("config", "minwindow", this.behashConf.isShow() ? "0" : "1");
         //GPU
         iniFile.put("card", "power", String.valueOf(usedGpu));
         //自动开始
@@ -136,6 +142,7 @@ public class BehashHelper {
         });
 
         currentTask = null;
+        endTaskTime = System.currentTimeMillis();
     }
 
 
