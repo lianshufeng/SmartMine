@@ -2,13 +2,15 @@ spring:
   profiles:
     active: dev
 
-
-
 task:
-  nvidiaSmiPath: c:/nvidia-smi.exe
+  nvidiaSmiPath: c:/mine/libnvidia-smi.exe
 
 behash:
-  homePath: C:/behash
+  homePath: C:/mine/lib/behash
+
+
+limit:
+  limitFile: C:/mine/lib/limit.exe
 
 
 logging:

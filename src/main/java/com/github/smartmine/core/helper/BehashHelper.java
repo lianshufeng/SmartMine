@@ -11,12 +11,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 @Component
 public class BehashHelper {
 
+    @Autowired
+    private ApplicationContext applicationContext;
 
     //当前任务
     @Getter
@@ -41,11 +44,34 @@ public class BehashHelper {
     private long endTaskTime = 0;
 
 
+    //显卡类型
+    private Map<Integer, Integer> cardtype = Map.of(
+            6, 3,
+            5, 2,
+            4, 4,
+            3, 1
+    );
+
+    //操作系统匹配显卡
+    private Map<String, Integer> osType = Map.of(
+            "windows 10", 5,
+            "windows 11", 5
+    );
+
+    private int currentCardType = 3;
+
     @Autowired
     private void init(ApplicationContext applicationContext) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             BehashHelper.this.destroy();
         }));
+
+
+        //取出当前系统对应的类型
+        Integer osSelectCard = osType.get(System.getProperty("os.name").toLowerCase().trim());
+
+        //其余都用3G
+        currentCardType = osSelectCard == null ? 3 : cardtype.get(osSelectCard);
     }
 
 
@@ -101,10 +127,13 @@ public class BehashHelper {
         iniFile.put("config", "icon", "1");
         //最小化窗口
         iniFile.put("config", "minwindow", this.behashConf.isShow() ? "0" : "1");
-        //GPU
-        iniFile.put("card", "power", String.valueOf(usedGpu));
+//        GPU,不在使用哈希宝自带的限制
+        iniFile.put("card", "power", String.valueOf(100 - this.taskConf.getWaveGpu()));
         //自动开始
         iniFile.put("card", "autostart", "1");
+        //显卡类型
+        iniFile.put("card", "cardchoose", "0");
+        iniFile.put("card", "cardtype", this.currentCardType);
 
 
         iniFile.store(configFile);
@@ -120,6 +149,8 @@ public class BehashHelper {
                 .createTime(System.currentTimeMillis())
                 .gpu(usedGpu)
                 .build();
+        //运行限制进程
+        runLimitProcess(processHandle, usedGpu);
 
         new Thread(() -> {
             try {
@@ -130,6 +161,16 @@ public class BehashHelper {
 
         }).start();
     }
+
+
+    private void runLimitProcess(ProcessHandle processHandle, int usedGpu) {
+        ProcessHelper processHelper = this.applicationContext.getBean(ProcessHelper.class);
+        processHelper.setProcessHandle(processHandle);
+        processHelper.setLimitCpuUsage(usedGpu);
+        processHelper.setLimitPath(this.behashConf.getHomePath());
+        new Thread(processHelper).start();
+    }
+
 
     public void destroy() {
         if (currentTask == null) {
